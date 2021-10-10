@@ -46,11 +46,11 @@
   fail: msg="Pip version must be higher than 8"
   when: (virtualenv_pip_version|string).split('.')[0] | int < 8
 
-- name: Reinstall pip version ({{ virtualenv_pip_version }})
-  pip: name=pip version={{ virtualenv_pip_version }} virtualenv={{ virtualenv_path }}
-  become: yes
-  become_user: "{{ virtualenv_user }}"
-  when: virtualenv_pip_version is defined
+# - name: Reinstall pip version ({{ virtualenv_pip_version }})
+#   pip: name=pip version={{ virtualenv_pip_version }} virtualenv={{ virtualenv_path }}
+#   become: yes
+#   become_user: "{{ virtualenv_user }}"
+#   when: virtualenv_pip_version is defined
 
 - name: Add private index to pip.conf
   template: >
