@@ -37,7 +37,7 @@
   when: virtualenv_python_major_version == 3
 
 - name: Create the virtualenv
-  command: virtualenv {{ virtualenv_path }} --distribute --python={{ virtualenv_python_executable }}
+  command: virtualenv {{ virtualenv_path }} --python={{ virtualenv_python_executable }}
   become: yes
   become_user: "{{ virtualenv_user }}"
   when: virtualenv_recreate_venv or (virtualenv_activate.stat.exists != true) or (virtualenv_activate.stat.exists and virtualenv_python_major_version == 3 and current_python_version.stdout|int < 3)
