@@ -1,0 +1,5 @@
+# Pip config file
+
+[global]
+extra-index-url = {{ virtualenv_index_url }}
+trusted-host = {{ virtualenv_index_host }}

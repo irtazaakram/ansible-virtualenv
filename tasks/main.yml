@@ -1,0 +1,68 @@
+- name: Install apt packages
+  apt: pkg={{ item }} state=present update_cache=true cache_valid_time=3600
+  with_items: [build-essential, python-dev]
+  become: yes
+
+- name: Install virtualenv version ({{ virtualenv_version }})
+  command: pip install virtualenv=={{ virtualenv_version }}
+  become: yes
+  when: virtualenv_version is defined
+
+- name: Install latest virtualenv version
+  command: pip install virtualenv
+  become: yes
+  when: virtualenv_version is not defined
+
+- name: Create folder for virtualenv
+  file: state=directory owner={{ virtualenv_user }} group={{ virtualenv_group }} path={{ virtualenv_path }}
+  become: yes
+
+- name: Check whether virtualenv exists
+  stat: path="{{ virtualenv_path }}/bin/activate"
+  register: virtualenv_activate
+
+- name: Create variable for current python version
+  shell: "{{ virtualenv_path }}/bin/python -c 'import sys; print(sys.version_info.major)'"
+  register: current_python_version
+  when: virtualenv_activate.stat.exists
+
+- name: Destroy current virtualenv if upgrading from python2 to python3
+  file: path={{ virtualenv_path }} state=absent
+  when: virtualenv_recreate_venv or (virtualenv_activate.stat.exists and virtualenv_python_major_version == 3 and current_python_version.stdout|int < 3)
+  become: yes
+
+- name: Install apt python3-pip
+  apt: pkg=python3-pip state=present
+  become: yes
+  when: virtualenv_python_major_version == 3
+
+- name: Create the virtualenv
+  command: virtualenv {{ virtualenv_path }} --distribute --python={{ virtualenv_python_executable }} {{ virtualenv_site_packages }}
+  become: yes
+  become_user: "{{ virtualenv_user }}"
+  when: virtualenv_recreate_venv or (virtualenv_activate.stat.exists != true) or (virtualenv_activate.stat.exists and virtualenv_python_major_version == 3 and current_python_version.stdout|int < 3)
+
+- name: Checks if valid pip version
+  fail: msg="Pip version must be higher than 8"
+  when: (virtualenv_pip_version|string).split('.')[0] | int < 8
+
+- name: Reinstall pip version ({{ virtualenv_pip_version }})
+  pip: name=pip version={{ virtualenv_pip_version }} virtualenv={{ virtualenv_path }}
+  become: yes
+  become_user: "{{ virtualenv_user }}"
+  when: virtualenv_pip_version is defined
+
+- name: Add private index to pip.conf
+  template: >
+    src=pip.conf.jn2
+    dest={{ virtualenv_path }}/pip.conf
+    owner={{ virtualenv_user }}
+    group={{ virtualenv_group }}
+  become: yes
+  when: virtualenv_write_pip_conf
+
+- name: Install requirements
+  pip: requirements={{ virtualenv_requirements_file }} virtualenv={{ virtualenv_path }} extra_args='{{ virtualenv_extra_pip_args }}'
+  become: yes
+  become_user: "{{ virtualenv_user }}"
+  when: virtualenv_requirements_file is defined

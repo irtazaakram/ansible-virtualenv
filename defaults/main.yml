@@ -1,0 +1,12 @@
+virtualenv_site_packages: "--no-site-packages"
+virtualenv_python_major_version: 3
+
+virtualenv_write_pip_conf: true
+virtualenv_index_url: http://pypi.edtd.net/EDITED/dev/
+virtualenv_index_host: pypi.edtd.net
+
+virtualenv_extra_pip_args: ""
+virtualenv_pip_version: 21.2.4
+
+virtualenv_python_executable: "{{ {2: 'python', 3: 'python3'}[virtualenv_python_major_version] }}"
+virtualenv_recreate_venv: false

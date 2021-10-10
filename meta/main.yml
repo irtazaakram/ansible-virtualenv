@@ -1,0 +1,19 @@
+---
+
+galaxy_info:
+  author: EDITED devs
+  description: Creates a python virtualenv
+  company: EDITED
+  license: MIT
+  min_ansible_version: 1.9
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+  categories:
+  - cloud
+  - development
+  - packaging
+  - system
+  - python
+dependencies: []
